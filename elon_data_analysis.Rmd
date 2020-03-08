@@ -1,0 +1,36 @@
+---
+title: "elon_data_analysis"
+output: html_document
+---
+
+
+```{r}
+
+library(tidyverse)
+library(tidyr)
+library(stringr)
+library(dplyr)
+
+```
+
+```{r}
+elon_musk <- read.csv("data/Elon.csv")  
+
+
+tidy_data <- elon_musk %>% separate(row_number(998), into = c("time", "text", "replies", "retweets", "likes"), sep="," ) %>% group_by(time, likes, replies ) %>% filter(!is.na(likes))  %>%  select(time, likes, replies, everything())  
+
+(cleaned_time_likes <- filter(tidy_data, !str_detect(time, " |w|A") , !str_detect(likes, " |w|A|S"))) 
+
+```
+```{r}
+CNBCTwitter <- read.csv("data/CNBCTwitterSearch.csv")  
+
+CNBC <- CNBCTwitter %>% separate(row_number(2335), into = c("time", "text", "replies", "retweets", "likes"), sep="," ) %>% group_by(time, likes, replies ) %>% filter(!is.na(likes))  %>%  select(time, likes, replies, everything())  
+
+(CNBC_twitter <- filter(CNBC, !str_detect(time, " |w|A")) %>% separate(time, into = c("year", "month", "day"), sep="-"))
+
+```
+```{r}
+c
+```
+

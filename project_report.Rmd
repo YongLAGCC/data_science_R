@@ -1,0 +1,83 @@
+---
+title: "The Influence of Media on Tesla’s Stock Price"
+author: "Official Answers"
+date: "2018-11-12"
+output: html_document
+---
+
+#Introduction
+
+We hypothesize that news from major media outlets such as Twitter and Wall Street Journal may have a strong influence (such as correlation) on the stock price of Tesla, Inc. One might imagine that stock prices are particularly susceptible to breaking news on social media since the news reflect new market information. For instance, when Elon Musk (Tesla’s CEO) himself gives out the unplanned news, it seems like the market would experience extreme momentary fluctuations. 
+
+The purpose of the project is to analyze and (explore correlation) between social media and news platforms with stock price. We believe that if our research finds a correlation between stock movements and news, then we might be able to create trading strategies. Otherwise, the absence of correlation should teach us not to trade stocks purely based on breaking news.
+
+Methodologically, We extract data from popular news sources and social media, such as Twitter, Facebook, CNN, WSJ, etc from from 11/10/2016 to 11/10/2016. After conducting sentiment analysis (through R libraries), we use the sentiment, the number of related news, and the speed of transmission for the quanlitative analysis. We analyze Tesla’s daily stock prices and volumes from 11/10/2016 to 11/10/2016 and minutely stock prices and volumes from from 04/11/2018 to 11/10/2018. 
+
+The tool we majorly use is R language by Rstudio. We might also utilize Python if needed for specific libraries.  
+
+
+
+#Exploratory Data Analysis
+
+## Stock Data
+
+We get the historical data for Tesla stock from Yahoo! Finance. We take the close and open price and volume of Teala stock from 2016-11-10 to 2018-11-10.
+
+###daily price data
+
+We import the daily price and plot the log of close price over time to see how Tesla's stock price has changed over time. We also computed the basic summary statistics(mean,range,variance) of the stock price.
+
+```{r daily price}
+library(tidyverse)
+
+daily_price<-read.csv('data/TSLA.csv')%>%
+  transmute(Date=as.character(Date),Open,Close,Volume)
+problems(daily_price)
+
+
+daily_price%>%ggplot()+geom_point(aes(Date,log(Close)))
+
+as.tibble(list(mean=mean(daily_price$Close),min=min(daily_price$Close),
+               max=max(daily_price$Close),variance=var(daily_price$Close)))
+
+```
+
+As we can see from the graph, Tesla's stock price exprienced a relatively steady growth at first but started to have more volatility during the past one year or so. This is the period in which we are mainly interested in.
+
+###minutely data
+
+Considering that we may need to look into the change in stock price in more detail to see how it responded to news on social media, we also obtained the minutely price and volume data for the past 7 months from Bloomberg and imported it.
+
+```{r minutely data}
+library(readxl)
+minutely_price<- read_excel("Data/bloomberg_tsla_minutely_price_04252018_11072018.xlsx", 
+                            sheet = "Sheet1")%>%transmute(Date=Dates,Open,Close,Volume)
+problems(minutely_price)
+
+minutely_price%>%ggplot()+geom_point(aes(Date,log(Close)),position="jitter")
+
+as.tibble(list(mean=mean(minutely_price$Close),min=min(minutely_price$Close),
+               max=max(minutely_price$Close),variance=var(minutely_price$Close)))
+```
+
+
+###comparing to S&P500
+
+To see how Tesla's stock change is related to the change in stock market, we compared it to the price of S&P 500. 
+
+```{r comparision}
+SP500<-read.csv('data/^GSPC.CSV')%>%
+  transmute(Date=as.character(Date),Open_SP500=Open,Close_SP500=Close,Volume_SP500=Volume)
+
+daily_price%>%left_join(SP500,by="Date")%>%
+  ggplot(aes(Date))+geom_point(aes(y=log(Close)))+
+  geom_point(aes(y=log(Close_SP500)-2,color="red"))+
+  scale_y_continuous(sec.axis = sec_axis(~.+2,name="log(Close_SP500)"))
+
+
+
+```
+
+As shown in the graph, the correlation between S&P500 and Tesla is not very strong. While S&P500 is generally growing over time, there is more ups and downs in the stock price of Tesla. So, there must be other reasons driven the change and we believe the news and releases on social media is one big reason for that.
+
+

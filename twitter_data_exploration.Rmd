@@ -1,0 +1,48 @@
+---
+title: "twitter_data_exploration"
+author: "Zack Light"
+date: "November 12, 2018"
+output: html_document
+---
+
+```{r}
+library(rvest)
+library(tidyverse)
+
+src <- read_html("./data/(_) @elonmusk @Tesla - Twitter Search.html")
+
+table <- src %>% 
+  html_nodes(".tweet") 
+
+# table <- table %>%
+#   mutate(time = html_nodes(".tweet") %>% 
+#   html_text()) %>% 
+#   mutate(text )
+```
+
+```{r}
+library(RSelenium)
+library(rvest)
+#start RSelenium
+#https://rpubs.com/johndharrison/RSelenium-Docker
+#docker run -d -p 4445:4444 selenium/standalone-firefox:2.53.0
+remDr <- remoteDriver(remoteServerAddr = "127.0.0.1", port = 4445L)
+remDr$open()
+
+#navigate to your page
+remDr$navigate("https://twitter.com/CNBC?lang=en&lang=en")
+
+#scroll down 5 times, waiting for the page to load at each time
+for(i in 1:800){      
+remDr$executeScript(paste("scroll(0,",i*10000,");"))
+Sys.sleep(1)    
+}
+
+#get the page html
+page_source<-remDr$getPageSource()
+
+#parse it
+cnbc_tweets <- read_html(page_source[[1]]) %>% html_nodes(".tweet-text") %>%
+  html_text()
+```
+
